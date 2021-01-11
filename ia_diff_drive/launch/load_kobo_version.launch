@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="world" default="empty"/> 
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <arg name="bb1" default="Bot_1"/>
+  <arg name="cc1" default="Con_1"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find ia_diff_drive)/world/Walls_and_world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+
+
+<arg name="robot_name"/>
+<arg name="tf_prefix" value="glu"/>
+  
+<!--  <param name="robot_description" command="$(find xacro)/xacro.py '$(find ia_diff_drive)/description/urdf/diff_robot.xacro'"/> -->
+<!-- <param name="robot_description" command="$(find xacro)/xacro.py '$(find kobo)/description/urdf/kobo_robot.urdf.xacro'"/> -->
+<param name="robot_description" command="$(find xacro)/xacro.py '$(find kobo)/description/urdf/kobo_robot_without_mod.urdf.xacro'"/>
+
+
+
+<node name="bot_1" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot1 -x -2.0 -y 3.46410161514 -z 0 -Y 5.23598775598  -namespace bot_1" />
+
+
+<node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+<node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+      args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+  <param name="yaml_cfg_file" value="$(find kobo)/params/mux.yaml" />
+  <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+</node>
+
+<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+  <param name="tf_prefix" value="$(arg tf_prefix)" />
+</node>
+
+<node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot2 -x -2.0 -y -3.46410161514 -z 0 -Y 7.33038285838   -namespace bot_2" />
+<node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot3 -x 4.0 -y -9.79717439318e-16 -z 0 -Y 9.42477796077   -namespace bot_3" />
+
+<!-- <node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model mybot2 -x -2.0 -y -3.46410161514 -z 0 -Y 7.33038285838  -namespace bot_2" />
+<node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model mybot3 -x 4.0 -y -9.79717439318e-16 -z 0 -Y 9.42477796077  -namespace bot_3" /> -->
+<!-- <node name="con_1" pkg="swarm_rnd" type="botCon.py" output="screen" args="bot_1"/> 
+<node name="con_2" pkg="swarm_rnd" type="botCon.py" output="screen" args="bot_2"/> 
+<node name="con_3" pkg="swarm_rnd" type="botCon.py" output="screen" args="bot_3"/> 
+ -->
+
+<arg name="gazebo_rise_delay" default="5.0" />
+<arg name="node_start_delay" default="10.0" /> 
+<arg name="viz_start_delay" default="12.0" />
+
+<node name="pose_collector_node" pkg="ia_diff_drive" type="pose_collector.py" launch-prefix="bash -c 'sleep $(arg gazebo_rise_delay); $0 $@' " output="screen"/>
+
+<node name="con_1" pkg="ia_diff_drive" type="botCon.py"  args="bot_1" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " output="screen"/> 
+<node name="con_2" pkg="ia_diff_drive" type="botCon.py"  args="bot_2" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "/> 
+<node name="con_3" pkg="ia_diff_drive" type="botCon.py"  args="bot_3" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "/> 
+
+<node name="visualize_bots" pkg="ia_diff_drive" type="visual.py" launch-prefix="bash -c 'sleep $(arg viz_start_delay); $0 $@' " output="screen"/>
+
+<!-- <node name="posecol" pkg="swarm_rnd" type="pose_collector.py" output="screen"/> 
+ -->
+
+</launch>
