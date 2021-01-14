@@ -12,4 +12,8 @@ The second version of this package uses kobuki-gazebo package. Install this pack
  - Build with catkin\_make to update the project entry
  - Launch the second version with `roslaunch ia_diff_drive load_kobo_version.launch`
 
+A pdf file in included inside the docs directory that explains some aspects of the project:
+
+
+
 
