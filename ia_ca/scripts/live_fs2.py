@@ -18,7 +18,7 @@ from matplotlib.patches import Polygon
 A = []
 B = []
 
-MARGIN = 8
+MARGIN = 1.5
 
 class interactivePlot():
     def  __init__(self):

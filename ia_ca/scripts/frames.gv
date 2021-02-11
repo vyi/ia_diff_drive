@@ -1,0 +1,13 @@
+digraph G {
+"bot_2/odom" -> "bot_2/base_footprint"[label="Broadcaster: /gazebo\nAverage rate: 1000.219 Hz\nMost recent transform: 77.041 ( 0.001 sec old)\nBuffer length: 4.575 sec\n"];
+"map" -> "bot_2/odom"[label="Broadcaster: /link_2\nAverage rate: 33.421 Hz\nMost recent transform: 77.066 ( -0.024 sec old)\nBuffer length: 4.548 sec\n"];
+"bot_3/odom" -> "bot_3/base_footprint"[label="Broadcaster: /gazebo\nAverage rate: 1000.219 Hz\nMost recent transform: 77.041 ( 0.001 sec old)\nBuffer length: 4.575 sec\n"];
+"map" -> "bot_3/odom"[label="Broadcaster: /link_3\nAverage rate: 33.421 Hz\nMost recent transform: 77.047 ( -0.005 sec old)\nBuffer length: 4.548 sec\n"];
+"bot_1/odom" -> "bot_1/base_footprint"[label="Broadcaster: /gazebo\nAverage rate: 1000.219 Hz\nMost recent transform: 77.041 ( 0.001 sec old)\nBuffer length: 4.575 sec\n"];
+"map" -> "bot_1/odom"[label="Broadcaster: /link_1\nAverage rate: 33.282 Hz\nMost recent transform: 77.067 ( -0.025 sec old)\nBuffer length: 4.567 sec\n"];
+"world" -> "map"[label="Broadcaster: /con_1\nAverage rate: 8323.780 Hz\nMost recent transform: 77.038 ( 0.004 sec old)\nBuffer length: 4.571 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 77.042"[ shape=plaintext ] ;
+ }->"world";
+}

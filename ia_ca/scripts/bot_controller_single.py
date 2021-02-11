@@ -272,7 +272,7 @@ def controller(kw):
     rospy.Subscriber('/{}/odom'.format(botname), Odometry, callb1)
     
     neighbors = []
-    for name in kw:
+    for name in kw[1:]:
         b8 = Bot(name)
         neighbors.append(b8)
 
@@ -323,6 +323,7 @@ def controller(kw):
 
         start_angle2 = atan2( sin(theta1+pi- Wm*Ts), cos(theta1+pi- Wm*Ts)) 
         end_angle2 = atan2( sin(theta1+pi+ Wm*Ts), cos(theta1+pi+ Wm*Ts)) 
+
         ## Create Sector for robot fwd motion
         Af = [  0, Vm*Ts, start_angle1, end_angle1, x1, y1]
 
@@ -384,7 +385,8 @@ def controller(kw):
 
         ## Food
 
-        for i in range(4):
+        #for i in range(4):
+        for i in range(len(walls)):
             ## Checking for collision with i'th WALL
             s1, c1 = checkC(Af, walls[i])       #In forward Direction
             s2, c2 = checkC(Ab, walls[i])       #In backward Direction
@@ -463,12 +465,26 @@ def controller(kw):
         d.append([3*pi/4.0, pi, (WL/2.0-SizeBot), (WL/2.0-SizeBot),0, WL])
         d.append([pi/4.0, pi/2.0, (WL/2.0-SizeBot), -(WL/2.0-SizeBot), 0, WL])
 
+        X_BOTS = []
+        for xb in B_BOTS:
+            x = getXbot(xb)
+            X_BOTS.append(x)
+        d = d+X_BOTS
+
         msg = json.dumps(d)
         pub2.publish(msg)
         rate.sleep()
 
+def getXbot(xb):
+    indices = [2,3,4,5,0,1]
+    temp = [0 for i in xb]
 
+    jdx = 0
+    for idx in indices:
+        temp[jdx] = xb[idx]
+        jdx = jdx + 1
 
+    return temp
 
 if __name__ == '__main__':
     try:

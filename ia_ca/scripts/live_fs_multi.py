@@ -22,8 +22,8 @@ MARGIN = 8
 
 class interactivePlot():
     def  __init__(self):
-        self.fig, self.ax = plt.subplots()
-        plt.subplots_adjust(left=0.15, bottom=0.04, top=0.95, right=0.85)
+        self.fig, (self.ax, self.ax2) = plt.subplots(1,2, figsize=(15,8))
+        plt.subplots_adjust(left=0.05, bottom=0.10, top=0.90, right=0.98)
         #self.ax.axis('equal')
         self.A = []
         self.B = []
@@ -60,7 +60,7 @@ class interactivePlot():
             correctData=False
 
         ## The plotting is pretty lame. We do not want to do it too fast
-        if correctData and self.ptick>3:
+        if correctData and self.ptick>2:
 
             self.ptick  = 0
             # Plot 3 patches
@@ -68,17 +68,27 @@ class interactivePlot():
             # Bot sector
             # Obstruected Patch
             self.ax.clear()
+            self.ax2.clear()
             #sects =  [ temp[0], temp[1] ]
             a = self.plot_sec(*temp[1], clr='y')
+            b = self.plot_sec(*temp[1], clr='y')
             self.ax.add_artist(a)
+            self.ax2.add_artist(b)
+
             a = self.plot_sec(*temp[2], clr='y')
+            b = self.plot_sec(*temp[2], clr='y')
             self.ax.add_artist(a)
+            self.ax2.add_artist(b)
+
+            for t in temp[3:7]:
+                a = self.plot_sec(*t, clr='r')
+                b = self.plot_sec(*t, clr='r')
+                self.ax.add_artist(a)
+                self.ax2.add_artist(b)
             
-            for t in temp[3:]:
+            for t in temp[7:]:
                 a = self.plot_sec(*t, clr='r')
                 self.ax.add_artist(a)
-
-
             
 
             ## Set axis properties
@@ -86,9 +96,17 @@ class interactivePlot():
             k= temp[1][3]
             self.ax.arrow( h, k, 0.35*cos(temp[0][0]), 0.35*sin(temp[0][0]), head_width=0.04, head_length=0.2, fc='k', ec='r', alpha=0.3)
             self.ax.arrow( h, k, 0.35*cos(temp[0][0]+temp[0][2]), 0.35*sin(temp[0][0]+temp[0][2]), head_width=0.04, head_length=0.2, fc='k', ec='k', alpha=0.3)
+
+            self.ax2.arrow( h, k, 0.35*cos(temp[0][0]), 0.35*sin(temp[0][0]), head_width=0.04, head_length=0.2, fc='k', ec='r', alpha=0.3)
+            self.ax2.arrow( h, k, 0.35*cos(temp[0][0]+temp[0][2]), 0.35*sin(temp[0][0]+temp[0][2]), head_width=0.04, head_length=0.2, fc='k', ec='k', alpha=0.3)
+
             self.ax.set_xlim([h-MARGIN,h+MARGIN])
             self.ax.set_ylim([k-MARGIN,k+MARGIN])
+
+            self.ax2.set_xlim([h-1,h+1])
+            self.ax2.set_ylim([k-1,k+1])
             #self.ax.axis('equal')
+            #self.ax2.axis('equal')
             self.fig.canvas.draw()
 
     def show(self):
