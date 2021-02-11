@@ -1,0 +1,80 @@
+<launch>
+
+
+  <arg name="robot_name"/>
+  <arg name="tf_prefix" value="bb"/>
+  <arg name="paused" default="true"/>
+
+  <arg name="bot_1_x" value="-2.0"/>
+  <arg name="bot_1_y" value="3.464"/>
+  <arg name="bot_1_yaw" value="5.236"/>
+
+  <arg name="bot_2_x" value="-2.0"/>
+  <arg name="bot_2_y" value="-3.464"/>
+  <arg name="bot_2_yaw" value="7.330"/>
+
+  <arg name="bot_3_x" value="4.0"/>
+  <arg name="bot_3_y" value="0"/>
+  <arg name="bot_3_yaw" value="9.424"/>
+
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  	<arg name="world_name" value="$(find ia_ca)/worlds/test_wall.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+  </include>
+  
+  <!-- <include file="$(find kobuki_gazebo)/launch/includes/robot.launch.xml"/> -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find kobo)/description/urdf/kobo_robot_without_mod.urdf.xacro'"/>
+
+
+  <node pkg="tf" type="static_transform_publisher" name="link_1" args="$(arg bot_1_x) $(arg bot_1_y) 0 $(arg bot_1_yaw) 0 0 /map /bot_1/odom 20/">
+    <param name="tf_prefix" value = "bot_1tf" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="link_2" args="$(arg bot_2_x) $(arg bot_2_y) 0 $(arg bot_2_yaw) 0 0 /map /bot_2/odom 20/">
+    <param name="tf_prefix" value = "bot_2tf" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="link_3" args="$(arg bot_3_x) $(arg bot_3_y) 0 $(arg bot_3_yaw) 0 0 /map /bot_3/odom 20/">
+    <param name="tf_prefix" value = "bot_3tf" />
+  </node>
+
+  <node name="bot_1" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot1 -x $(arg bot_1_x) -y $(arg bot_1_y) -z 0 -Y $(arg bot_1_yaw) -namespace bot_1"/>
+  
+
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+      args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find kobo)/params/mux.yaml" />
+    <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+  </node>
+
+
+  <node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot2 -x $(arg bot_2_x) -y $(arg bot_2_y) -z 0 -Y $(arg bot_2_yaw) -namespace bot_2" />
+
+  <node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot3 -x $(arg bot_3_x) -y $(arg bot_3_y) -z 0 -Y $(arg bot_3_yaw) -namespace bot_3" />
+
+
+  
+  <!-- <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="tf_prefix" value="$(arg tf_prefix)" />
+  </node> -->
+  
+  <!-- <group ns='bot_2'>
+  <node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot2 -x $(arg bot_2_x) -y $(arg bot_2_y) -z 0 -Y $(arg bot_2_yaw)" />
+  <param name="tf_prefix" value = "bot_2_tf" />
+  <node pkg="tf" type="static_transform_publisher" name="link_bc" args="$(arg bot_2_x) $(arg bot_2_y) 0 $(arg bot_2_yaw) 0 0 /map /bot_2/odom 100/"/>
+  </group>
+
+
+  <group ns='bot_3'>
+  <node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot3 -x $(arg bot_3_x) -y $(arg bot_3_y) -z 0 -Y $(arg bot_3_yaw)" />
+  <param name="tf_prefix" value = "bot_3_tf" />
+  <node pkg="tf" type="static_transform_publisher" name="link_bc" args="$(arg bot_3_x) $(arg bot_3_y) 0 $(arg bot_3_yaw) 0 0 /map /bot_3/odom 100/"/>
+  </group> -->
+
+<!-- 
+  <node name="con_1" pkg="ia_ca" type="map_fake.py" output="screen" args="bot_1"/> -->
+  <node name="con_1" pkg="ia_ca" type="bot_controller_single.py" output="screen" args="bot_1 bot_2 bot_3"/> 
+
+</launch>
