@@ -2,6 +2,7 @@ import rospy
 import tf
 import tf2_ros
 from nav_msgs.msg import Odometry
+from gazebo_msgs.msg import ModelStates
 from math import pi as PI
 
 
@@ -17,12 +18,23 @@ class Bot(object):
         #rospy.init_node("p_{}".format(self.name), anonymous=True)
 
         #rospy.Subscriber('/{}/odom'.format(name), Odometry, self.callbk)
+        rospy.Subscriber('/gazebo/model_states', ModelStates, self.callbk)
+        # self.buf      = tf2_ros.Buffer()
+        # self.listener = tf2_ros.TransformListener(self.buf)
+        # self.tf_pose = []
+        # rospy.sleep(1.0)
 
-        self.buf      = tf2_ros.Buffer()
-        self.listener = tf2_ros.TransformListener(self.buf)
-        self.tf_pose = []
-        rospy.sleep(1.0)
-
+    def callbk(self, msg):
+        names = msg.name
+        idx  = names.index(self.name)
+        self.pose[0] = msg.pose[idx].position.x
+        self.pose[1] = msg.pose[idx].position.y
+        x = msg.pose[idx].orientation.x
+        y = msg.pose[idx].orientation.y
+        z = msg.pose[idx].orientation.z
+        w = msg.pose[idx].orientation.w
+        euler = tf.transformations.euler_from_quaternion((x,y,z,w))
+        self.pose[2] = euler[2]
 
     # def callbk(self, data):
     #     '''
@@ -109,6 +121,10 @@ class Bot(object):
             print(e)
 
         return self.pose
+
+    def getPose2(self):
+        return self.pose
+
 
     def getQuat(self):
         return self.quat

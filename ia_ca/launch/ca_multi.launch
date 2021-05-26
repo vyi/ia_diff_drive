@@ -39,7 +39,7 @@
     <param name="tf_prefix" value = "bot_3tf" />
   </node>
 
-  <node name="bot_1" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot1 -x $(arg bot_1_x) -y $(arg bot_1_y) -z 0 -Y $(arg bot_1_yaw) -namespace bot_1"/>
+  <node name="bot_1" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot_1 -x $(arg bot_1_x) -y $(arg bot_1_y) -z 0 -Y $(arg bot_1_yaw) -namespace bot_1"/>
   
 
   <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
@@ -50,9 +50,9 @@
   </node>
 
 
-  <node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot2 -x $(arg bot_2_x) -y $(arg bot_2_y) -z 0 -Y $(arg bot_2_yaw) -namespace bot_2" />
+  <node name="bot_2" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot_2 -x $(arg bot_2_x) -y $(arg bot_2_y) -z 0 -Y $(arg bot_2_yaw) -namespace bot_2" />
 
-  <node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot3 -x $(arg bot_3_x) -y $(arg bot_3_y) -z 0 -Y $(arg bot_3_yaw) -namespace bot_3" />
+  <node name="bot_3" pkg="gazebo_ros" type="spawn_model" output="screen"    args="-urdf -param robot_description -model bot_3 -x $(arg bot_3_x) -y $(arg bot_3_y) -z 0 -Y $(arg bot_3_yaw) -namespace bot_3" />
 
 
   
@@ -75,6 +75,6 @@
 
 <!-- 
   <node name="con_1" pkg="ia_ca" type="map_fake.py" output="screen" args="bot_1"/> -->
-  <node name="con_1" pkg="ia_ca" type="bot_controller_single.py" output="screen" args="bot_1 bot_2 bot_3"/> 
+  <node name="con_1" pkg="ia_ca" type="bot_controller_single_v2.py" output="screen" args="bot_1 bot_2 bot_3"/> 
 
 </launch>
