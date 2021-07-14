@@ -15,58 +15,235 @@ def mysqrt(a):
         a = 0
     return sqrt(a)
 
+def get_angular_diff(start, end):
+    diff_angle = 0.0
+
+    if end*start > 0: ## both have same sign
+            diff_angle = end - start
+    else:
+        if end < 0:
+            diff_angle = 2*pi - start + end
+        else:
+            diff_angle = end - start
+    return diff_angle
+
+def is_higher(A, B):
+    '''
+    Accepts two angles A, B
+    Both need to be within [-pi, pi]
+    A and B represent a sector of a circle with center O, with one arm OA (start) and other OB (end)
+
+    Because of jump of theta from -pi to pi, there is an ambiguous case are OA and arm OB 
+    located on different sides (i.e. one angle is positive and other is negative)
+
+    Returns
+    -------
+    True : When OA - OB makes CW sector [hypothesis]
+    False : When OA - OB makes CCW sector [alternate hypothesis]
+
+    '''
+    if (A*B < 0) and (A <0):    ## Handles case: when both A and B have different sign and A<0
+        return True
+    else:
+        if ((A - B)>0):
+            return True
+        else:
+            return False
 
 def get_s_intersection(a,b):
     '''
-    Calculates the intersection of sector a and b
+    Given two sectors 'a' and 'b' wrt same origin. 
+    This function returns partitions of 'a' that will be formed when excluding 'b'
+
     A sector is specified as a list [in_radius, out_radius, start_angle, end_angle]
     
     Returns
     -------
     The component sectors of a, which are unoccupied by sector b
     '''
-    ans = []
 
-    # Are the sectors really intersecting? 
-    # If start_angle (or end_angle or both angles) of sector b fall inside the sector a start_angle - end_angle
-    if not (angle_between(a[2],a[3],b[2]) or angle_between(a[2],a[3],b[3])):
+    #######
+    ## First we need to establish if sector 'b' even intersects with 'a'
+    b_starts_in_a = angle_between(a[2],a[3],b[2])
+    b_ends_in_a   = angle_between(a[2],a[3],b[3])
+
+    if not (b_starts_in_a or b_ends_in_a):
+        ## print("******* Non intersection case : {}, {}".format(a,b))
         return [a]
-    
-    ## If we are here, there can be a valid intersection
-    ## One condition where there won't be an intersection is when the outer radii of a is smaller
-    ## than the inner radii of b. In this case b will be eniterly outside a.
-    if (b[0] > a[1]):
+
+    if (b[0] > a[1]): ## 'b' is located radially out of 'a'
+        ## print("******* Non intersection case : {}, {}".format(a,b))
         return [a]
+
+    partitions = []
     
-    ## The sector before b
-    if (b[2]-a[2] >0):
-        temp_sector = [a[0],a[1],a[2],min(b[2],a[3])]
-        ans.append(temp_sector)
+    ## case when 'b' starts and ends within 'a'   (i.e. angle span of 'b'' is contained in 'a')
+    if (b_starts_in_a and b_ends_in_a):
+
+        if (b[1] < a[1]):
+            d = get_angular_diff(b[2], b[3])
+            if d > 0.06:
+                temp_sector = [b[1], a[1], b[2], b[3]]
+                partitions.append(temp_sector)
+            print("******* 'b' contained in 'a' (wholly !!!) : {}, {}".format(a,b))
+        else:
+            pass
+            ## print("******* 'b' contained in 'a' (angle span) : {}, {}".format(a,b))
+
+        ## start sector
+        d = get_angular_diff(a[2], b[2])
+        if d>0.06:
+            temp_sector = [a[0], a[1], a[2], b[2]]
+            partitions.append(temp_sector)
+
+        ## occluded sector
+        d = get_angular_diff(b[2], b[3])
+        if d>0.06:
+            temp_sector = [a[0], b[0], b[2], b[3]]
+            partitions.append(temp_sector)
+
+        ## remaining sector
+        d = get_angular_diff(b[3], a[3])
+        if d>0.06:
+            temp_sector = [a[0], a[1], b[3], a[3]]
+            partitions.append(temp_sector)
+
+        return partitions ## Early release
     
-    ## The sector after b
-    if a[3]-b[3] >0:
-        temp_sector = [a[0],a[1],max(b[3],a[2]),a[3]]
-        ans.append(temp_sector)
+    ## case when b_starts in a
+    if (b_starts_in_a):
+        ## print("******* 'b' starts in 'a' (angle) : {}, {}".format(a,b))
+        if (b[1] < a[1]):
+            d = get_angular_diff(b[2], a[3])
+            if d>0.06:
+                temp_sector = [b[1], a[1], b[2], a[3]]
+                partitions.append(temp_sector)
+
+        ## start sector
+        d = get_angular_diff( a[2], b[2] )
+        if d>0.06:
+            temp_sector = [a[0], a[1], a[2], b[2]]
+            partitions.append(temp_sector)
+
+        ## occluded sector
+        d = get_angular_diff(b[2], a[3])
+        if d>0.06:
+            temp_sector = [a[0], b[0], b[2], a[3]]
+            partitions.append(temp_sector)
+
+        return partitions
     
-    ## Sector inside
-    temp_sector = [ a[0], min(b[0],a[1]), b[2], b[3]]
-    ans.append(temp_sector)
+    ## case when b_ends in a
+    if (b_ends_in_a):
+        ## print("******* 'b' ends in 'a' (angle) : {}, {}".format(a,b))
+        if (b[1] < a[1]):
+            d = get_angular_diff(a[2], b[3])
+            if d>0.06:
+                temp_sector = [b[1], a[1], a[2], b[3]]
+                partitions.append(temp_sector)
+        
+        ## start sector is occluded sector
+        d = get_angular_diff(a[2], b[3])
+        if d>0.06:
+            temp_sector = [a[0], b[0], a[2], b[3]]
+            partitions.append(temp_sector)
+
+        ## end sector 
+        d = get_angular_diff(b[3], a[3])
+        if d>0.06:
+            temp_sector = [a[0], a[1], b[3], a[3]]
+            partitions.append(temp_sector)
+
+        return partitions
+
+    print("!!!!!!!!!!! This is unreachable code !!!!!!!!!!!! ")
+    return []
+
+
+
+# def get_s_intersection(a,b):
+#     '''
+#     Calculates the intersection of sector a and b
+#     A sector is specified as a list [in_radius, out_radius, start_angle, end_angle]
+#     a: Free sector wrt which we need to find partitions
+
+#     Returns
+#     -------
+#     The component sectors of a, which are unoccupied by sector b
+#     '''
+#     ans = []
+
+#     print("\n\ta:{}, \n\tb:{} \n".format(a,b)) 
+
+#     # If start_angle (or end_angle or both angles) of sector b fall inside the sector a start_angle - end_angle
+#     if not (angle_between(a[2],a[3],b[2]) or angle_between(a[2],a[3],b[3])):
+#         print("******* Not intersecting : {}, {}".format(a,b))
+#         return [a]
     
-    ## Sector outside
-    if b[1] < a[1]:
-        temp_sector = [b[1], a[1], b[2], b[3]]
-        ans.append(temp_sector)
+#     ## If we are here, there can be a valid intersection
+#     ## One condition where there won't be an intersection is when the outer radii of a a[1] is smaller
+#     ## than the inner radii of b b[0]. In this case b will be eniterly outside a.
+#     if (b[0] > a[1]):
+#         print("******* Not intersecting again !: {}, {}".format(a,b))
+#         return [a]
     
-    return ans
+#     ## Does A begin (in angle) before B
+#     if ( is_A_ahead_of_B(b[2], a[2]) ):
+        
+#         ###temp_sector = [a[0], a[1], a[2], min(b[2],a[3])]
+#         temp_sector = [a[0], a[1], a[2], a[3] if is_A_ahead_of_B(b[2], a[3]) else b[2]]
+
+#         print("******* case pre something : {}".format(temp_sector))
+#         ans.append(temp_sector)
+    
+#     ## ## Does B end (in angle) before A
+#     if (is_A_ahead_of_B(a[3],b[3])):
+#         print("******* case post something : {}".format(temp_sector))
+#         ###temp_sector = [a[0],a[1], max(b[3],a[2]),a[3]]
+#         temp_sector = [a[0],a[1], b[3] if is_A_ahead_of_B(b[3], a[2]) else a[2], a[3]]
+#         ans.append(temp_sector)
+    
+#     ## Sector inside
+#     temp_sector = [ a[0], min(b[0],a[1]), b[2], b[3]]
+#     ans.append(temp_sector)
+    
+#     ## Sector outside
+#     if b[1] < a[1]:
+#         print("******* case something else :::: ::: ::::: ")
+#         temp_sector = [b[1], a[1], b[2], b[3]]
+#         ans.append(temp_sector)
+    
+#     print("******** Returning home with : {}".format(ans))
+#     return ans
 
 ## One way to check if a given angle falls within a given range 
 def angle_between(start_angle, end_angle, check_angle):
-    if end_angle < start_angle:
-        end_angle = end_angle + pi*2
-        
-    if( check_angle >= start_angle) and (check_angle <= end_angle):
-        return True
+
+    ## Debug : Remap angles s.t. start_angle = 0
     
+    ### case 1: When both angles have similar sign:
+    if (start_angle*end_angle < 0) and (end_angle < 0):
+        end_angle = end_angle + 2*pi
+
+    newStart = 0
+    newEnd = end_angle - start_angle
+    newCheck = check_angle - start_angle
+    
+    if (newCheck<0):
+        newCheck = newCheck + 2*pi
+
+    # if end_angle < start_angle:
+    #     end_angle = end_angle + pi*2
+    #   
+    # if( check_angle >= start_angle) and (check_angle <= end_angle):
+    #     return True
+    # return False
+
+    if (newCheck >= newStart) and (newCheck <= newEnd):
+        #print("Eval True : angle between {}, {}, {}".format(newStart, newCheck, newEnd))
+        return True
+
+    #print("Eval False : angle between {}, {}, {}".format(newStart, newCheck, newEnd))
     return False
 
 ## Does the check_angle lie between lower_angle and upper_angle (?)
@@ -236,6 +413,8 @@ def arc_arc(x1,y1,theta1,theta1d,r1,x2,y2,theta2,theta2d,r2):
     else:
         #status_arc_arc = 0    
         return 0
+
+
 ## Given an arc and a line-segment, is there an intersection
 def arc_line(x1,y1,theta1,theta1d,r1,x2,y2,theta2,r2l,r2u):
     if (theta1d<theta1):
